@@ -11,105 +11,108 @@
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{width:100%;height:100%;overflow:hidden;font-family:"Microsoft YaHei","PingFang SC",sans-serif;}
   body{
-    background:#0b1526;
+    background:#04060f;
     display:flex;align-items:center;justify-content:center;
   }
   /* 游戏舞台 */
   #stage{
     position:relative;width:min(100vw, 100vh*4/3);height:min(100vh, 100vw*3/4);
     max-width:1000px;max-height:750px;border-radius:18px;overflow:hidden;
-    box-shadow:0 18px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.25);
+    box-shadow:0 18px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.14);
   }
-  /* ── CSS 绘制的天空场景（无照片，无人物，柔和不刺眼） ── */
-  #bgSky{position:absolute;inset:0;background:
-    linear-gradient(180deg,#6fbdee 0%,#a3d9f5 30%,#d7efd2 58%,#a8df9e 78%,#7cc47d 100%);}
-  #bgSun{position:absolute;top:7%;right:16%;width:110px;height:110px;border-radius:50%;
-    background:radial-gradient(circle,#fffbe8 0%,#ffe9a0 45%,rgba(255,220,120,0) 70%);
-    filter:blur(1px);}
-  #bgClouds{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
-  .cloud{position:absolute;height:26px;border-radius:999px;background:rgba(255,255,255,.9);
-    box-shadow:0 0 0 1px rgba(255,255,255,.25);opacity:.9;filter:blur(.5px);}
-  .cloud::before,.cloud::after{content:"";position:absolute;border-radius:50%;background:inherit;}
-  .cloud::before{width:70%;height:190%;left:8%;top:-90%;}
-  .cloud::after{width:50%;height:160%;right:12%;top:-60%;}
-  @keyframes cloudDrift{from{transform:translateX(-12vw);}to{transform:translateX(112vw);}}
-  #bgHills{position:absolute;left:-8%;right:-8%;bottom:0;height:20%;border-radius:50% 50% 0 0/40% 40% 0 0;
-    background:linear-gradient(180deg,#4f9d60,#3c8550 70%,#2f6f43);}
-  #bgHills::before{content:"";position:absolute;left:6%;right:6%;top:-52%;height:55%;border-radius:50% 50% 0 0/90% 90% 0 0;
-    background:linear-gradient(180deg,#6dbd7a,#4f9d60);opacity:.9;}
-  #bgVignette{position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(120% 100% at 50% 30%, transparent 55%, rgba(10,30,60,.18) 100%);}
-
+  /* ── 动态星空背景 ── */
+  #bgSky{position:absolute;inset:0;background:linear-gradient(180deg,#03040c 0%,#081026 45%,#10203f 100%);}
+  #bgNebula{position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(55% 42% at 18% 16%, rgba(96,64,190,.20), transparent 62%),
+      radial-gradient(48% 40% at 84% 24%, rgba(44,120,210,.16), transparent 62%),
+      radial-gradient(70% 46% at 52% 88%, rgba(20,90,140,.12), transparent 62%);}
   #spark{position:absolute;inset:0;pointer-events:none;z-index:2;}
 
   /* 顶部 HUD */
   #hud{position:absolute;top:0;left:0;right:0;padding:10px 14px;display:flex;gap:10px;align-items:center;
-    background:linear-gradient(180deg, rgba(15,35,65,.5), transparent);z-index:5;}
-  .hud-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.24);
-    backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.4);border-radius:999px;
-    padding:5px 11px;color:#fff;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.4);font-size:14px;}
-  .hud-pill .lbl{color:rgba(255,255,255,.85);font-weight:400;font-size:11px;}
+    background:linear-gradient(180deg, rgba(0,4,14,.6), transparent);z-index:5;}
+  .hud-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);
+    backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.26);border-radius:999px;
+    padding:4px 11px;color:#fff;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.5);font-size:14px;}
+  .hud-pill .lbl{color:rgba(255,255,255,.75);font-weight:400;font-size:11px;}
   .hud-pill.cbtn{cursor:pointer;transition:.15s;}
-  .hud-pill.cbtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.34);}
+  .hud-pill.cbtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.22);}
+  .ballIcon{width:20px;height:20px;image-rendering:pixelated;}
   #hudMaster{margin-left:auto;}
-  #xpbar{flex:1;min-width:100px;height:14px;background:rgba(0,0,0,.35);border-radius:999px;overflow:hidden;
-    border:1px solid rgba(255,255,255,.4);}
+  #xpbar{flex:1;min-width:100px;height:14px;background:rgba(0,0,0,.4);border-radius:999px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.25);}
   #xpfill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#ffd94d,#ffb02e);
     box-shadow:0 0 10px #ffd94d;transition:width .4s;}
   #xptxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font-size:11px;color:#fff;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.5);}
 
   /* 主内容 */
-  #view{position:absolute;top:60px;bottom:56px;left:0;right:0;padding:10px 14px;overflow:hidden;}
+  #view{position:absolute;top:56px;bottom:56px;left:0;right:0;padding:10px 14px;overflow:hidden;}
   .screen{display:none;width:100%;height:100%;}
   .screen.on{display:block;}
 
   /* 底部导航（第一个即孵化） */
-  #tabs{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgba(16,32,60,.85);
-    backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.2);z-index:6;}
-  .tab{flex:1;padding:9px 0 8px;text-align:center;color:rgba(255,255,255,.75);font-size:13px;font-weight:600;
+  #tabs{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgba(3,8,20,.88);
+    backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.14);z-index:6;}
+  .tab{flex:1;padding:9px 0 8px;text-align:center;color:rgba(255,255,255,.7);font-size:13px;font-weight:600;
     cursor:pointer;border-top:3px solid transparent;transition:.2s;user-select:none;}
   .tab .ico{font-size:20px;display:block;margin-bottom:2px;}
-  .tab.on{color:#fff;border-top-color:#ffd94d;background:rgba(255,217,77,.14);}
+  .tab.on{color:#fff;border-top-color:#ffd94d;background:rgba(255,217,77,.12);}
 
-  /* 弹窗 / Toast */
-  #toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:rgba(20,40,75,.92);
+  /* Toast */
+  #toast{position:absolute;top:66px;left:50%;transform:translateX(-50%);background:rgba(10,20,45,.94);
     color:#fff;padding:8px 18px;border-radius:999px;font-size:14px;z-index:20;opacity:0;transition:.3s;
-    border:1px solid rgba(255,255,255,.3);box-shadow:0 6px 24px rgba(0,0,0,.35);pointer-events:none;}
+    border:1px solid rgba(255,255,255,.3);box-shadow:0 6px 24px rgba(0,0,0,.5);pointer-events:none;}
   #toast.show{opacity:1;}
 
   /* 孵化页 */
   #treeView{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;}
   #scene{position:relative;flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
-  #scene::after{content:"";position:absolute;inset:auto 12% 0;height:34px;border-radius:50%;
-    background:radial-gradient(ellipse at center,rgba(0,40,10,.28),transparent 68%);}
-  /* 凤王蛋（点击孵化） */
-  #treeBtn{position:relative;width:190px;height:235px;cursor:pointer;user-select:none;
-    filter:drop-shadow(0 22px 34px rgba(120,25,0,.5));
+  /* 凤王精灵蛋（华丽版：金色流光 + 旋转光环 + 呼吸辉光） */
+  #treeBtn{position:relative;width:200px;height:250px;cursor:pointer;user-select:none;
+    filter:drop-shadow(0 0 34px rgba(255,150,60,.45));
     animation:eggFloat 2.8s ease-in-out infinite;transition:transform .12s;}
-  #treeBtn:hover{transform:scale(1.06);}
-  #treeBtn:active{transform:scale(.94);}
+  #treeBtn:hover #eggBody{transform:scale(1.05);}
+  #treeBtn:active #eggBody{transform:scale(.92);}
   #eggBody{position:absolute;inset:0;border-radius:50% 50% 46% 46%;
-    background:radial-gradient(circle at 34% 26%, #fff1cf 0%, #ffc47e 28%, #ff8a3d 58%, #dd4a1e 82%, #a02a12 100%);
-    box-shadow:inset -16px -22px 38px rgba(110,15,0,.5), inset 10px 12px 26px rgba(255,240,210,.55);
-    animation:eggGlow 2.2s ease-in-out infinite;}
-  .eggspot{position:absolute;border-radius:50%;background:rgba(140,20,5,.45);filter:blur(1.5px);}
-  #treeBtn .eggspot:nth-child(2){width:26px;height:26px;left:22%;top:24%;}
-  #treeBtn .eggspot:nth-child(3){width:20px;height:20px;right:20%;top:40%;}
-  #treeBtn .eggspot:nth-child(4){width:24px;height:24px;left:38%;bottom:22%;}
-  #treeBtn .eggspot:nth-child(5){width:16px;height:16px;right:30%;bottom:34%;}
-  #treeBtn .eggspot:nth-child(6){width:15px;height:15px;left:16%;top:52%;}
-  #treeBtn .eggspot:nth-child(7){width:17px;height:17px;right:14%;top:18%;}
-  #eggBody::before{content:"";position:absolute;left:20%;top:16%;width:30%;height:18%;border-radius:50%;
-    background:rgba(255,255,255,.55);filter:blur(5px);}
+    background:radial-gradient(circle at 30% 20%, #fff6df 0%, #ffd88f 24%, #ff9a4a 50%, #e04a1e 76%, #8f180c 100%);
+    border:3px solid rgba(255,195,90,.65);
+    box-shadow:inset -18px -26px 44px rgba(80,10,0,.6), inset 10px 14px 30px rgba(255,235,200,.5);
+    animation:eggGlow 2.2s ease-in-out infinite;transition:transform .12s;}
+  #eggBody::after{content:"";position:absolute;inset:0;border-radius:inherit;
+    background:linear-gradient(115deg, transparent 32%, rgba(255,255,255,.7) 46%, rgba(255,255,255,.12) 52%, transparent 62%);
+    background-size:240% 100%;background-position:130% 0;animation:sheen 3.4s linear infinite;}
+  .eggspot{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(110,10,0,.55),rgba(110,10,0,.28) 70%,transparent);
+    filter:blur(1px);}
+  #treeBtn .eggspot:nth-child(3){width:30px;height:30px;left:20%;top:26%;}
+  #treeBtn .eggspot:nth-child(4){width:22px;height:22px;right:18%;top:42%;}
+  #treeBtn .eggspot:nth-child(5){width:26px;height:26px;left:40%;bottom:20%;}
+  #treeBtn .eggspot:nth-child(6){width:17px;height:17px;right:30%;bottom:34%;}
+  #treeBtn .eggspot:nth-child(7){width:15px;height:15px;left:14%;top:54%;}
+  #treeBtn .eggspot:nth-child(8){width:18px;height:18px;right:12%;top:16%;}
+  #eggHalo{position:absolute;inset:-84px;border-radius:50%;border:2px dashed rgba(255,205,110,.5);
+    animation:spin 18s linear infinite;pointer-events:none;}
+  #eggHalo2{position:absolute;inset:-50px;border-radius:50%;
+    border:1px solid rgba(255,225,160,.5);border-top-color:transparent;border-bottom-color:transparent;
+    animation:spin 10s linear infinite reverse;pointer-events:none;}
+  .efx{position:absolute;width:6px;height:6px;border-radius:50%;background:#ffd97a;filter:blur(1px);
+    animation:efxFloat 2.4s ease-in-out infinite;pointer-events:none;}
+  .efx:nth-of-type(1){left:-34px;top:30%;animation-delay:0s;}
+  .efx:nth-of-type(2){right:-26px;top:52%;animation-delay:.7s;}
+  .efx:nth-of-type(3){left:-20px;bottom:18%;animation-delay:1.3s;}
+  .efx:nth-of-type(4){right:-36px;bottom:30%;animation-delay:1.9s;}
+  @keyframes spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
   @keyframes eggFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
-  @keyframes eggGlow{0%,100%{box-shadow:inset -16px -22px 38px rgba(110,15,0,.5), inset 10px 12px 26px rgba(255,240,210,.55), 0 0 26px rgba(255,140,50,.55);}
-    50%{box-shadow:inset -16px -22px 38px rgba(110,15,0,.5), inset 10px 12px 26px rgba(255,240,210,.55), 0 0 60px rgba(255,160,60,.85);}}
+  @keyframes eggGlow{0%,100%{box-shadow:inset -18px -26px 44px rgba(80,10,0,.6), inset 10px 14px 30px rgba(255,235,200,.5), 0 0 26px rgba(255,150,60,.45);}
+    50%{box-shadow:inset -18px -26px 44px rgba(80,10,0,.6), inset 10px 14px 30px rgba(255,235,200,.5), 0 0 64px rgba(255,170,70,.9);}}
+  @keyframes sheen{0%{background-position:130% 0;}100%{background-position:-40% 0;}}
+  @keyframes efxFloat{0%,100%{transform:translate(0,0);opacity:.9;}50%{transform:translate(0,-16px);opacity:.3;}}
   #eggHint{position:relative;color:#fff;font-weight:700;margin-top:16px;font-size:15px;
-    text-shadow:0 2px 6px rgba(0,40,10,.7);background:rgba(0,50,20,.35);padding:4px 14px;border-radius:999px;
-    backdrop-filter:blur(3px);}
+    text-shadow:0 2px 6px rgba(0,0,0,.7);background:rgba(10,25,50,.5);padding:5px 16px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(3px);}
   /* 孵化动画中的蛋 */
-  #eggWrap{position:absolute;top:26%;display:none;flex-direction:column;align-items:center;z-index:3;}
+  #eggWrap{position:absolute;top:24%;display:none;flex-direction:column;align-items:center;z-index:3;}
   #egg{width:170px;height:215px;border-radius:50% 50% 46% 46%;position:relative;
     background:radial-gradient(circle at 34% 26%, #ffcf8a 0%, #ff8a3d 38%, #e0521f 70%, #a02a12 100%);
     box-shadow:0 0 46px 12px rgba(255,120,40,.6), inset -12px -18px 34px rgba(120,20,0,.55), inset 8px 10px 22px rgba(255,240,210,.5);
@@ -122,7 +125,7 @@
   @keyframes eggShake{from{transform:rotate(-6deg);}to{transform:rotate(6deg);}}
   @keyframes crackPop{0%{transform:scale(.9);}60%{transform:scale(1.18);}100%{transform:scale(1);}}
 
-  #hatchInfo{color:#fff;font-weight:700;margin-top:10px;font-size:15px;text-shadow:0 2px 6px rgba(0,0,0,.6);z-index:3;}
+  #hatchInfo{color:#fff;font-weight:700;margin-top:10px;font-size:15px;text-shadow:0 2px 6px rgba(0,0,0,.7);z-index:3;}
   /* 底部控制栏：第一个按钮 = 孵化 */
   #treeCtrl{margin:4px 0 4px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;}
   .btn{border:0;cursor:pointer;color:#fff;font-weight:700;font-size:14px;padding:10px 20px;border-radius:999px;
@@ -134,24 +137,23 @@
   .btn.green{background:linear-gradient(180deg,#59e08a,#24a85a);box-shadow:0 5px 16px rgba(36,168,90,.45), inset 0 1px 0 rgba(255,255,255,.5);}
   .btn:disabled{filter:grayscale(.7) brightness(.85);cursor:not-allowed;}
 
-  .autoBox{display:flex;gap:5px;align-items:center;background:rgba(255,255,255,.16);
-    border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 8px;backdrop-filter:blur(4px);}
+  .autoBox{display:flex;gap:5px;align-items:center;background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:4px 8px;backdrop-filter:blur(4px);}
   .speedbox{display:flex;gap:5px;align-items:center;}
   .chip{padding:5px 11px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;color:#fff;
-    background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);transition:.15s;user-select:none;}
-  .chip:hover{background:rgba(255,255,255,.32);}
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);transition:.15s;user-select:none;}
+  .chip:hover{background:rgba(255,255,255,.24);}
   .chip.on{background:linear-gradient(180deg,#ffd94d,#ffa51e);color:#3a2600;border-color:#ffd94d;}
-  .chip.auto-chip{background:rgba(255,255,255,.22);}
   .chip.auto-chip.on{background:linear-gradient(180deg,#59e08a,#24a85a);color:#fff;border-color:#59e08a;}
 
   /* 结果弹窗 */
   #resultModal{position:absolute;inset:0;z-index:15;display:none;align-items:center;justify-content:center;
-    background:rgba(10,18,40,.55);backdrop-filter:blur(3px);}
+    background:rgba(3,8,20,.6);backdrop-filter:blur(3px);}
   #resultModal.show{display:flex;}
   #resultCard{width:min(88%, 430px);border-radius:18px;padding:22px;text-align:center;color:#fff;
-    background:rgba(20,40,75,.82);border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(12px);
-    box-shadow:0 18px 50px rgba(0,0,0,.5);animation:crackPop .35s;}
-  #rcSprite{width:180px;height:180px;image-rendering:pixelated;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45));}
+    background:rgba(12,26,52,.92);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(12px);
+    box-shadow:0 18px 50px rgba(0,0,0,.6);animation:crackPop .35s;}
+  #rcSprite{width:180px;height:180px;image-rendering:pixelated;filter:drop-shadow(0 10px 18px rgba(0,0,0,.5));}
   #rcName{font-size:28px;font-weight:800;margin:4px 0 2px;}
   #rcMeta{font-size:15px;opacity:.95;margin-bottom:14px;line-height:1.7;}
   #rcQuality{display:inline-block;padding:2px 12px;border-radius:999px;font-size:13px;font-weight:800;margin-bottom:8px;}
@@ -160,13 +162,13 @@
   /* 属性页 */
   #slotGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;height:100%;overflow-y:auto;align-content:start;padding:2px;}
   .slot{position:relative;border-radius:14px;padding:8px 6px 7px;text-align:center;cursor:pointer;
-    background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.28);backdrop-filter:blur(5px);
+    background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);backdrop-filter:blur(5px);
     transition:.15s;}
   .slot:hover{transform:translateY(-2px);}
   .slot .qbar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:4px 4px 0 0;}
   .slot img{width:72px;height:72px;image-rendering:pixelated;}
   .slot .nm{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .slot .tp{font-size:10px;color:rgba(255,255,255,.75);}
+  .slot .tp{font-size:10px;color:rgba(255,255,255,.7);}
   .slot .lv{font-size:11px;color:#ffd94d;font-weight:700;}
   .slot .cp{font-size:12px;color:#7fe8ff;font-weight:700;}
   .slot.empty{opacity:.55;}
@@ -175,99 +177,127 @@
     font-size:17px;text-shadow:0 2px 8px rgba(0,0,0,.6);}
   /* 精灵详情弹窗 */
   #slotModal{position:absolute;inset:0;z-index:15;display:none;align-items:center;justify-content:center;
-    background:rgba(10,18,40,.55);backdrop-filter:blur(3px);}
+    background:rgba(3,8,20,.6);backdrop-filter:blur(3px);}
   #slotModal.show{display:flex;}
   #slotCard{width:min(90%, 460px);border-radius:18px;padding:20px;color:#fff;
-    background:rgba(20,40,75,.85);border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(12px);
-    box-shadow:0 18px 50px rgba(0,0,0,.5);animation:crackPop .3s;text-align:center;}
+    background:rgba(12,26,52,.92);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(12px);
+    box-shadow:0 18px 50px rgba(0,0,0,.6);animation:crackPop .3s;text-align:center;}
   #slotCard .sdTop{display:flex;gap:18px;align-items:center;text-align:left;margin-bottom:12px;}
-  #sdSprite{width:130px;height:130px;image-rendering:pixelated;filter:drop-shadow(0 8px 14px rgba(0,0,0,.4));}
+  #sdSprite{width:130px;height:130px;image-rendering:pixelated;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5));}
   #sdName{font-size:26px;font-weight:800;line-height:1.2;}
   #sdQuality{display:inline-block;padding:1px 10px;border-radius:999px;font-size:12px;font-weight:800;margin:4px 0;}
   #sdMeta{font-size:13px;opacity:.92;line-height:1.8;}
   .sBar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px;}
   .sBar .lbl{width:44px;color:rgba(255,255,255,.85);text-align:right;flex-shrink:0;}
-  .sBar .track{flex:1;height:10px;background:rgba(0,0,0,.4);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.2);}
+  .sBar .track{flex:1;height:10px;background:rgba(0,0,0,.4);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.15);}
   .sBar .fill{height:100%;border-radius:999px;}
   .sBar .val{width:34px;color:#ffd94d;font-weight:700;text-align:right;}
-  #sdStats{background:rgba(0,0,0,.25);border-radius:12px;padding:8px 12px;border:1px solid rgba(255,255,255,.15);}
+  #sdStats{background:rgba(0,0,0,.28);border-radius:12px;padding:8px 12px;border:1px solid rgba(255,255,255,.12);}
   #sdGo{display:flex;gap:10px;justify-content:center;margin:10px 0;font-size:13px;}
   #sdGo span{background:rgba(255,255,255,.14);border-radius:999px;padding:3px 12px;font-weight:700;}
   #sdClose{margin-top:4px;}
 
-  /* 对战页 */
-  #battleWrap{height:100%;display:flex;flex-direction:column;gap:8px;}
-  #battleSelect{flex:1;display:flex;flex-direction:column;}
-  #battleSelect .tip{color:#fff;font-size:15px;margin-bottom:8px;text-shadow:0 2px 6px rgba(0,0,0,.5);}
-  #bsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;overflow-y:auto;}
-  .bsCard{display:flex;gap:8px;align-items:center;border-radius:12px;padding:6px 8px;cursor:pointer;
-    background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.3);color:#fff;transition:.15s;}
-  .bsCard:hover{transform:translateY(-2px);background:rgba(255,255,255,.26);}
-  .bsCard img{width:52px;height:52px;image-rendering:pixelated;}
-  .bsCard .t{font-size:12px;color:rgba(255,255,255,.75);}
-  #battleFight{display:none;flex:1;flex-direction:column;}
-  #bfTop{display:flex;justify-content:space-between;align-items:center;color:#fff;margin-bottom:4px;}
-  #bfTop .floor{font-size:15px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.5);}
-  .bfSide{display:flex;gap:10px;align-items:center;}
-  .bfSide .spr{width:150px;height:150px;image-rendering:pixelated;filter:drop-shadow(0 10px 16px rgba(0,0,0,.45));}
-  .bfSide .inf .nm{font-weight:800;font-size:18px;}
-  .bfSide .inf .lv{font-size:13px;color:#ffd94d;}
-  #bfArena{display:flex;justify-content:space-between;align-items:center;flex:1;background:rgba(0,0,0,.22);
-    border-radius:16px;padding:10px 18px;border:1px solid rgba(255,255,255,.2);position:relative;}
-  .hpb{margin-top:4px;width:150px;height:12px;background:rgba(0,0,0,.4);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.3);}
-  .hpf{height:100%;border-radius:999px;background:linear-gradient(90deg,#57e06a,#2bb55f);transition:width .3s;}
-  #bfLog{height:92px;overflow-y:auto;border-radius:12px;background:rgba(0,0,0,.25);
-    border:1px solid rgba(255,255,255,.2);padding:7px 10px;font-size:13px;color:#fff;line-height:1.6;}
-  #bfLog div:last-child{animation:logIn .25s;}
-  @keyframes logIn{from{opacity:0;transform:translateX(6px);}to{opacity:1;}}
-  #bfBtns{display:flex;gap:10px;justify-content:center;}
-  #bfSkip{flex:1;max-width:220px;}
-  #autoBattlePill{display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:13px;}
-  .switch{width:52px;height:28px;border-radius:999px;background:rgba(255,255,255,.25);position:relative;cursor:pointer;
-    border:1px solid rgba(255,255,255,.4);transition:.2s;}
+  /* ── 全屏战斗画面 ── */
+  #fightOverlay{position:absolute;inset:0;z-index:10;display:none;flex-direction:column;
+    background:linear-gradient(180deg,rgba(3,6,16,.94),rgba(8,16,36,.97));padding:12px 16px 58px;color:#fff;}
+  #fightOverlay.show{display:flex;}
+  #foTop{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  #foExit{cursor:pointer;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:999px;
+    padding:5px 14px;font-size:14px;font-weight:700;}
+  #foExit:hover{background:rgba(255,255,255,.2);}
+  #foFloor{font-size:17px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.5);}
+  #autoBattlePill{margin-left:auto;display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:13px;}
+  .switch{width:52px;height:28px;border-radius:999px;background:rgba(255,255,255,.18);position:relative;cursor:pointer;
+    border:1px solid rgba(255,255,255,.35);transition:.2s;}
   .switch::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
-    background:#fff;transition:.2s;box-shadow:0 2px 6px rgba(0,0,0,.3);}
+    background:#fff;transition:.2s;box-shadow:0 2px 6px rgba(0,0,0,.4);}
   .switch.on{background:linear-gradient(90deg,#ffd94d,#ffa51e);}
   .switch.on::after{left:26px;}
+  #bfArena{flex:1;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.38);
+    border-radius:16px;padding:8px 20px;border:1px solid rgba(255,255,255,.16);position:relative;}
+  .bfSide{display:flex;gap:12px;align-items:center;}
+  .bfSide .spr{width:clamp(84px,26%,150px);aspect-ratio:1;object-fit:contain;image-rendering:pixelated;
+    filter:drop-shadow(0 10px 16px rgba(0,0,0,.5));}
+  .bfSide .spr.spr-empty{border-radius:50%;opacity:.85;}
+  .bfSide .inf .nm{font-weight:800;font-size:18px;}
+  .bfSide .inf .lv{font-size:13px;color:#ffd94d;}
+  .vs{color:#ffd94d;font-weight:800;font-size:30px;text-shadow:0 0 14px rgba(255,200,80,.5);}
+  .hpb{margin-top:4px;width:150px;height:12px;background:rgba(0,0,0,.45);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.25);}
+  .hpf{height:100%;border-radius:999px;background:linear-gradient(90deg,#57e06a,#2bb55f);transition:width .3s;}
+  /* 战斗解说屏 */
+  #bfComment{flex:0 0 128px;display:flex;flex-direction:column;margin-top:8px;background:rgba(0,0,0,.42);
+    border-radius:14px;border:1px solid rgba(255,255,255,.16);overflow:hidden;}
+  #bfcHead{padding:6px 12px;font-weight:700;font-size:13px;background:rgba(255,217,77,.1);color:#ffd94d;
+    border-bottom:1px solid rgba(255,255,255,.12);}
+  #bfLog{flex:1;overflow-y:auto;padding:6px 12px;font-size:13px;line-height:1.7;}
+  #bfLog div:last-child{animation:logIn .25s;}
+  @keyframes logIn{from{opacity:0;transform:translateX(6px);}to{opacity:1;}}
+  #bfSkip{position:absolute;right:16px;bottom:14px;z-index:11;}
+
+  /* 对战选择页 */
+  #battleWrap{height:100%;display:flex;flex-direction:column;}
+  #battleSelect{flex:1;display:flex;flex-direction:column;}
+  #battleSelect .tip{color:#fff;font-size:15px;margin-bottom:8px;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  #bsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;overflow-y:auto;}
+  .bsCard{display:flex;gap:8px;align-items:center;border-radius:12px;padding:6px 8px;cursor:pointer;
+    background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);color:#fff;transition:.15s;}
+  .bsCard:hover{transform:translateY(-2px);background:rgba(255,255,255,.18);}
+  .bsCard img{width:52px;height:52px;image-rendering:pixelated;}
+  .bsCard .t{font-size:12px;color:rgba(255,255,255,.7);}
 
   /* 图鉴页 */
   #dexWrap{height:100%;display:flex;flex-direction:column;}
   #dexHead{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
-  #dexHead .tip{color:#fff;font-size:14px;text-shadow:0 2px 6px rgba(0,0,0,.5);}
+  #dexHead .tip{color:#fff;font-size:14px;text-shadow:0 2px 6px rgba(0,0,0,.6);}
   #dexGrid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(10,1fr);gap:6px;align-content:start;}
   .dexCell{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;
-    background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);}
+    background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);}
   .dexCell img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
-  .dexCell.miss{background:rgba(0,0,0,.28);color:rgba(255,255,255,.3);font-size:18px;}
+  .dexCell.miss{background:rgba(0,0,0,.3);color:rgba(255,255,255,.3);font-size:18px;}
 
-  #linkTag{position:absolute;right:12px;bottom:66px;z-index:5;font-size:11px;color:rgba(255,255,255,.9);
-    background:rgba(0,0,0,.3);padding:3px 9px;border-radius:999px;text-shadow:0 1px 2px rgba(0,0,0,.6);}
+  /* 存档/重置 */
+  #saveBar{position:absolute;left:12px;bottom:66px;z-index:5;display:flex;gap:8px;}
+  .pill{cursor:pointer;color:#fff;font-size:12px;font-weight:700;background:rgba(0,0,0,.35);
+    padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.25);transition:.15s;}
+  .pill:hover{background:rgba(0,0,0,.55);}
+  #linkTag{position:absolute;right:12px;bottom:66px;z-index:5;font-size:11px;color:rgba(255,255,255,.7);
+    background:rgba(0,0,0,.35);padding:3px 9px;border-radius:999px;}
+
+  /* 开局引导 */
+  #tutorial{position:absolute;inset:0;z-index:25;display:none;align-items:center;justify-content:center;
+    background:radial-gradient(120% 120% at 50% 30%, rgba(8,16,40,.92), rgba(2,4,12,.97));}
+  #tutorial.show{display:flex;}
+  #tutCard{width:min(90%, 470px);border-radius:20px;padding:26px 26px 20px;color:#fff;text-align:center;
+    background:rgba(16,32,66,.6);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(10px);
+    box-shadow:0 20px 60px rgba(0,0,0,.6), inset 0 0 60px rgba(90,140,255,.08);animation:crackPop .35s;}
+  #tutIcon{font-size:58px;margin-bottom:8px;}
+  #tutTitle{font-size:24px;font-weight:800;margin-bottom:10px;color:#ffd94d;}
+  #tutBody{font-size:15px;line-height:1.8;min-height:96px;opacity:.95;}
+  #tutBtns{display:flex;gap:12px;justify-content:center;margin-top:18px;}
+  #tutReset{margin-top:14px;background:none;border:0;color:rgba(255,255,255,.55);font-size:12px;cursor:pointer;
+    text-decoration:underline;}
+  #tutDots{display:flex;gap:6px;justify-content:center;margin-top:12px;}
+  .tdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);}
+  .tdot.on{background:#ffd94d;}
+
   ::-webkit-scrollbar{width:8px;height:8px;}
-  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.35);border-radius:99px;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:99px;}
   ::-webkit-scrollbar-track{background:transparent;}
 </style>
 </head>
 <body>
 <div id="stage">
   <div id="bgSky"></div>
-  <div id="bgSun"></div>
-  <div id="bgClouds">
-    <div class="cloud" style="top:16%;animation:cloudDrift 46s linear infinite;"></div>
-    <div class="cloud" style="top:34%;left:20%;animation:cloudDrift 62s linear infinite;"></div>
-    <div class="cloud" style="top:8%;left:40%;transform:scale(.7);animation:cloudDrift 78s linear infinite;"></div>
-    <div class="cloud" style="top:26%;left:60%;transform:scale(.55);animation:cloudDrift 55s linear infinite;"></div>
-  </div>
-  <div id="bgHills"></div>
-  <div id="bgVignette"></div>
+  <div id="bgNebula"></div>
   <canvas id="spark"></canvas>
 
   <div id="hud">
     <div class="hud-pill"><span class="lbl">Lv.</span><span id="hudLv">1</span></div>
     <div id="xpbar"><div id="xpfill"></div><div id="xptxt">0 / 100</div></div>
-    <div class="hud-pill">🔴<span id="hudBalls">10</span></div>
+    <div class="hud-pill"><img class="ballIcon" id="hudBallIcon" alt=""><span id="hudBalls">10</span></div>
     <div class="hud-pill">🏯<span id="hudTower">0</span><span class="lbl">层</span></div>
     <div class="hud-pill"><span id="hudRegen">1</span><span class="lbl">球/分</span></div>
-    <div class="hud-pill cbtn" id="hudMaster" title="通关每10层塔获得 · 必出最高品质">💜<span id="hudMballs">0</span><span class="lbl">大师球</span></div>
+    <div class="hud-pill cbtn" id="hudMaster" title="通关每10层塔获得 · 必出当前最高品质"><img class="ballIcon" id="hudMasterIcon" alt=""><span id="hudMballs">0</span></div>
   </div>
 
   <div id="view">
@@ -285,6 +315,19 @@
   </div>
 
   <div id="toast"></div>
+
+  <!-- 全屏战斗 -->
+  <div id="fightOverlay">
+    <div id="foTop">
+      <div id="foExit">✕ 返回</div>
+      <div id="foFloor">🏯 第 1 层</div>
+      <div id="autoBattlePill">自动连战 <div class="switch" id="abSwitch"></div></div>
+    </div>
+    <div id="bfArena"></div>
+    <div id="bfComment"><div id="bfcHead">📜 战斗解说</div><div id="bfLog"></div></div>
+    <button class="btn blue" id="bfSkip">⏭️ 跳过本局</button>
+  </div>
+
   <div id="resultModal"><div id="resultCard">
     <img id="rcSprite" alt="">
     <div id="rcQuality"></div>
@@ -300,7 +343,26 @@
     <div id="sdGo"></div>
     <button class="btn blue" id="sdClose">关闭</button>
   </div></div>
-  <div id="linkTag">🎮 网页版演示 · 刷新即全新账号</div>
+
+  <!-- 开局引导 -->
+  <div id="tutorial"><div id="tutCard">
+    <div id="tutIcon">🥚</div>
+    <div id="tutTitle"></div>
+    <div id="tutBody"></div>
+    <div id="tutDots"></div>
+    <div id="tutBtns">
+      <button class="btn blue" id="tutPrev">‹ 上一步</button>
+      <button class="btn" id="tutNext">下一步 ›</button>
+      <button class="btn green" id="tutStart" style="display:none">开始游戏 🎉</button>
+    </div>
+    <button id="tutReset">🔄 重置存档（从头开始）</button>
+  </div></div>
+
+  <div id="saveBar">
+    <div class="pill" id="btnSave">💾 存档</div>
+    <div class="pill" id="btnReset">🔄 重置</div>
+  </div>
+  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号</div>
 </div>
 
 <script src="pokemon_data.js"></script>
@@ -349,6 +411,10 @@ const TYPE_CHART={
 const XP_TABLE=[100];
 for(let lv=2;lv<150;lv++)XP_TABLE.push(Math.max(1,Math.round(XP_TABLE[XP_TABLE.length-1]*(1+lv/100))));
 
+/* ═════════════ 官方球贴图（PokeAPI，base64 内嵌） ═════════════ */
+const BALL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeBAMAAADJHrORAAAAA3NCSVQFBQUYJt5DAAAAIVBMVEX///8xMTH/lDqcSjr/1jr////eWjpKUlKlpcV7e4TezvdcMgHRAAAAAXRSTlMAQObYZgAAAH5JREFUGNNjYKALEBQUROEqKSkhCTACuUpqAnC+kAtIIBEurRLqBOSnCeDgCymB1aclwvlg83DyhcH8tDRDKF/cSL0cyE0uhPHLKyLK0szLYXzG6aWh5eXllXD7l86IAHJXwB0sFTlz1apVjQj/dAG5HQJI/u3o6BDEEx60AwCJgyJdBXcpkgAAAABJRU5ErkJggg==";
+const MASTER="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeBAMAAADJHrORAAAAA3NCSVQFBQUYJt5DAAAAKlBMVEX///8xMTG1Ove1AJTmIcVzMc5rMcX/xf/OQv/ezvdKUlKlpcV7e4T///9QT2M9AAAAAXRSTlMAQObYZgAAAJ9JREFUGNNjYKALEBQUROIxCiopKQkKwPkiLkpKKi6GcOkSlw4l9xJnmAJmFycUvoiLkZKSi4uzAYzvrKkJ1O8MM0DYaNKkSUouxjC+qBKIH2ycCOWLKYFAaCiML5WktQrIDVsI469afXtpaNYqGJ/x1Nq7q1atWgOzn3Hu6dtA7my4ByTvnJk5c+ZGhP92Arm7BZC8v3v37kHc4UFDAACipC3HuouENAAAAABJRU5ErkJggg==";
+
 /* ═════════════ 数值模型 ═════════════ */
 function buildPokedex(){
   const map={};
@@ -392,7 +458,7 @@ function calc_damage(aP,aLv,dP,dLv,critStreak){
   return {dmg,isCrit,critStreak,dodged,eff};
 }
 
-/* ═════════════ 游戏状态（刷新即全新账号，不持久化） ═════════════ */
+/* ═════════════ 游戏状态（进度保存在本机浏览器，换设备即全新账号） ═════════════ */
 const st={level:1,xp:0,balls:10,masterBalls:0,maxTower:0,slots:{},seen:new Set(),
   autoThrow:false,autoSpeed:0,energy:0,energyMax:100,energyRate:50,
   screen:"tree",revealTimer:0,pending:null,firstSeen:0,
@@ -473,6 +539,27 @@ function tryReplace(pid,level,cp){
   return{pending:false,slot:p.types[0],low:true};
 }
 
+/* ═════════════ 存档（localStorage） ═════════════ */
+const SAVE_KEY="jingling-web-save-v1";
+function saveGame(){
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      level:st.level,xp:st.xp,balls:st.balls,masterBalls:st.masterBalls,maxTower:st.maxTower,
+      slots:st.slots,seen:[...st.seen],autoThrow:st.autoThrow,autoSpeed:st.autoSpeed
+    }));
+  }catch(e){}
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;
+    const d=JSON.parse(raw);
+    st.level=d.level||1;st.xp=d.xp||0;st.balls=d.balls??10;st.masterBalls=d.masterBalls||0;
+    st.maxTower=d.maxTower||0;st.slots=d.slots||{};st.seen=new Set(d.seen||[]);
+    st.autoThrow=!!d.autoThrow;st.autoSpeed=d.autoSpeed||0;
+    return true;
+  }catch(e){return false;}
+}
+
 /* ═════════════ UI 工具 ═════════════ */
 const $=id=>document.getElementById(id);
 let toastTimer=null;
@@ -506,7 +593,13 @@ function renderTree(){
   el.innerHTML=`
     <div id="treeView">
       <div id="scene">
-        <div id="treeBtn"><div id="eggBody"></div><div class="eggspot"></div><div class="eggspot"></div><div class="eggspot"></div><div class="eggspot"></div><div class="eggspot"></div><div class="eggspot"></div></div>
+        <div id="treeBtn">
+          <div id="eggHalo"></div><div id="eggHalo2"></div>
+          <div id="eggBody"></div>
+          <div class="eggspot"></div><div class="eggspot"></div><div class="eggspot"></div>
+          <div class="eggspot"></div><div class="eggspot"></div><div class="eggspot"></div>
+          <div class="efx"></div><div class="efx"></div><div class="efx"></div><div class="efx"></div>
+        </div>
         <div id="eggHint">🥚 点击精灵蛋 · 消耗 1 球孵化</div>
         <div id="eggWrap" style="display:none">
           <div id="egg"></div>
@@ -530,12 +623,11 @@ function renderTree(){
     </div>`;
   $("treeBtn").onclick=()=>manualThrow();
   $("btnThrow").onclick=()=>manualThrow();
-  $("chipAuto").onclick=()=>{st.autoThrow=!st.autoThrow;toast(st.autoThrow?"自动孵化：开":"自动孵化：关");renderTree();};
-  el.querySelectorAll(".chip[data-sp]").forEach(c=>c.onclick=()=>{st.autoSpeed=+c.dataset.sp;renderTree();});
+  $("chipAuto").onclick=()=>{st.autoThrow=!st.autoThrow;toast(st.autoThrow?"自动孵化：开":"自动孵化：关");saveGame();renderTree();};
+  el.querySelectorAll(".chip[data-sp]").forEach(c=>c.onclick=()=>{st.autoSpeed=+c.dataset.sp;saveGame();renderTree();});
 }
-function renderEggOff(){ /* 树页面静止态：飘落的叶子由 canvas 处理 */ }
 
-/* 手动砸树 */
+/* 手动投掷 */
 function manualThrow(){
   if(st.balls<=0){toast("精灵球不足！");return;}
   if(st.revealTimer>0)return;
@@ -552,13 +644,13 @@ function masterThrow(){
 }
 function startHatch(p,lv,cp,master){
   st.pending={p,lv,cp,master};
+  hatchAnimStart=0;  // 重置动画起点，避免第二次孵化动画时长错乱
   const ew=$("eggWrap"),egg=$("egg"),crack=$("eggCrack"),info=$("hatchInfo");
   $("treeBtn").style.display="none";
   $("eggHint").style.display="none";
   ew.style.display="flex";egg.style.display="block";crack.style.display="none";
   egg.style.animation="eggShake .45s infinite alternate ease-in-out";
   info.textContent="孵化中…";
-  // 首次见到判定（动画期间）
   st.firstSeen=checkFirstSeen(p.id,p.quality);
   if(st.firstSeen>0)st.balls=Math.min(15000000,st.balls+st.firstSeen);
   st.revealTimer=2.6;
@@ -599,7 +691,6 @@ function showResult(){
   if(rep.pending){
     $("rcYes").style.display="";$("rcNo").style.display="";
   }else if(rep.low){
-    // 没有更优：默认放生
     $("rcYes").style.display="none";$("rcNo").textContent="放生获得经验";$("rcNo").style.display="";
   }else{
     $("rcYes").style.display="";$("rcNo").style.display="none";
@@ -620,7 +711,7 @@ $("rcYes").onclick=()=>{
   st.pending=null;$("resultModal").classList.remove("show");
   $("treeBtn").style.display="";
   $("eggHint").style.display="";
-  renderTree();renderHUD();
+  renderTree();renderHUD();saveGame();
 };
 $("rcNo").onclick=()=>{
   const r=st.pending;if(!r)return;
@@ -629,7 +720,7 @@ $("rcNo").onclick=()=>{
   st.pending=null;$("resultModal").classList.remove("show");
   $("treeBtn").style.display="";
   $("eggHint").style.display="";
-  renderTree();renderHUD();
+  renderTree();renderHUD();saveGame();
 };
 
 /* ── 属性页 ── */
@@ -649,8 +740,8 @@ function renderSlots(){
         <div class="cp">⚡${s[2].toLocaleString()}</div>
       </div>`;
     }else{
-      html+=`<div class="slot empty"><div class="qbar" style="background:rgba(255,255,255,.15)"></div>
-        <div style="color:rgba(255,255,255,.5);font-size:26px;padding-top:18px">?</div>
+      html+=`<div class="slot empty"><div class="qbar" style="background:rgba(255,255,255,.1)"></div>
+        <div style="color:rgba(255,255,255,.45);font-size:26px;padding-top:18px">?</div>
         <div class="nm">${TYPE_CN[t]}</div><div class="tp">未收服</div><div class="lv">-</div><div class="cp">-</div></div>`;
     }
   }
@@ -684,7 +775,7 @@ function showSlotDetail(t){
   $("slotModal").classList.add("show");
 }
 
-/* ── 对战页 ── */
+/* ── 对战：选择页 ── */
 function renderBattle(){
   const el=$("screen-battle");
   el.innerHTML=`<div id="battleWrap">
@@ -692,7 +783,6 @@ function renderBattle(){
       <div class="tip">👆 选择出战精灵（对战 ${st.maxTower+1} 层 · 精英怪每10层）</div>
       <div id="bsGrid"></div>
     </div>
-    <div id="battleFight"></div>
   </div>`;
   const grid=$("bsGrid");
   const entries=Object.entries(st.slots);
@@ -708,8 +798,11 @@ function renderBattle(){
       <div style="margin-left:auto;font-weight:800;color:#7fe8ff">${s[2].toLocaleString()}</div></div>`;
   }).join("");
   grid.querySelectorAll(".bsCard").forEach(c=>c.onclick=()=>startBattle(c.dataset.slot));
-  if(st.btPhase!=="select")buildFightUI();
 }
+function showFight(){$("fightOverlay").classList.add("show");}
+function hideFight(){$("fightOverlay").classList.remove("show");}
+
+/* 开始一场战斗（进入全屏战斗画面） */
 function startBattle(slot){
   const s=st.slots[slot];if(!s){toast("该槽位没有精灵");return;}
   const pid=s[0],lv=s[1];
@@ -727,35 +820,32 @@ function startBattle(slot){
   st.btTurn=0;st.btPcrit=0;st.btEcrit=0;st.btFloor=floor;st.btElite=elite;
   st.btLog=[`⚔️ ${pokedex[pid].cn} VS ${enemy.cn}！`, `${st.btPTurn?pokedex[pid].cn:enemy.cn} 先手！`];
   st.btPhase="fight";st.btTimer=0;st.btResult=0;
+  showFight();
+  buildFightUI();
   if(st.autoBattle)resolveFight();
-  else buildFightUI();
 }
+/* 渲染战斗画面（每次战斗重建，保证精灵形象实时刷新） */
 function buildFightUI(){
-  const wrap=$("battleFight");if(!wrap)return;
   const p=pokedex[st.btPlayer[0]],e=pokedex[st.btEnemy[0]];
-  wrap.style.display="flex";
-  wrap.innerHTML=`
-    <div id="bfTop"><div class="floor">🏯 第 ${st.btFloor} 层 ${st.btElite?"👑 精英怪":""}</div>
-      <div id="autoBattlePill">自动推关 <div class="switch ${st.autoBattle?"on":""}" id="abSwitch"></div></div></div>
-    <div id="bfArena">
-      <div class="bfSide"><div class="spr">${spriteHTML(p.id,150)}</div>
-        <div class="inf"><div class="nm">${p.cn} <span style="color:${QUALITY_COLORS[p.quality]}">${p.quality}</span></div>
-        <div class="lv">Lv.${st.btPlayer[1]}</div>
-        <div class="hpb"><div class="hpf" id="pf" style="width:100%"></div></div></div></div>
-      <div style="color:#fff;font-weight:800;font-size:26px">VS</div>
-      <div class="bfSide" style="flex-direction:row-reverse"><div class="spr">${spriteHTML(e.id,150)}</div>
-        <div class="inf" style="text-align:right"><div class="nm">${e.cn} <span style="color:${QUALITY_COLORS[e.quality]}">${e.quality}</span></div>
-        <div class="lv">Lv.${st.btEnemy[1]}</div>
-        <div class="hpb" style="margin-left:auto"><div class="hpf" id="ef" style="width:100%"></div></div></div></div>
-    </div>
-    <div id="bfLog"></div>
-    <div id="bfBtns">
-      <button class="btn blue" id="bfSkip">⏭️ 跳过战斗</button>
-    </div>`;
-  $("abSwitch").onclick=()=>{st.autoBattle=!st.autoBattle;renderBattle();if(st.autoBattle&&st.btPhase==="fight")resolveFight();};
-  $("bfSkip").onclick=resolveFight;
+  $("foFloor").innerHTML=`🏯 第 ${st.btFloor} 层 ${st.btElite?"👑 精英怪":""}`;
+  $("abSwitch").classList.toggle("on",st.autoBattle);
+  const spr=id=>{const src=window.PKSPRITES[id];
+    return src?`<img class="spr" src="${src}" alt="">`
+              :`<div class="spr spr-empty" style="background:${QUALITY_COLORS[pokedex[id].quality]}"></div>`;};
+  $("bfArena").innerHTML=`
+    <div class="bfSide"><div class="spr">${spr(p.id)}</div>
+      <div class="inf"><div class="nm">${p.cn} <span style="color:${QUALITY_COLORS[p.quality]}">${p.quality}</span></div>
+      <div class="lv">Lv.${st.btPlayer[1]}</div>
+      <div class="hpb"><div class="hpf" id="pf" style="width:100%"></div></div></div></div>
+    <div class="vs">VS</div>
+    <div class="bfSide" style="flex-direction:row-reverse"><div class="spr">${spr(e.id)}</div>
+      <div class="inf" style="text-align:right"><div class="nm">${e.cn} <span style="color:${QUALITY_COLORS[e.quality]}">${e.quality}</span></div>
+      <div class="lv">Lv.${st.btEnemy[1]}</div>
+      <div class="hpb" style="margin-left:auto"><div class="hpf" id="ef" style="width:100%"></div></div></div></div>`;
+  $("bfLog").innerHTML=st.btLog.map(x=>`<div>${x}</div>`).join("");
+  $("bfLog").scrollTop=$("bfLog").scrollHeight;
 }
-function pushLog(line){st.btLog.push(line);if(st.btLog.length>60)st.btLog.shift();
+function pushLog(line){st.btLog.push(line);if(st.btLog.length>80)st.btLog.shift();
   const box=$("bfLog");if(box){box.innerHTML=st.btLog.map(x=>`<div>${x}</div>`).join("");box.scrollTop=box.scrollHeight;}}
 function resolveFight(){
   const p=pokedex[st.btPlayer[0]],e=pokedex[st.btEnemy[0]];
@@ -778,14 +868,14 @@ function resolveFight(){
     st.balls=Math.min(15000000,st.balls+st.btFloor);
     if(st.btElite)st.masterBalls++;
     pushLog(`🎉 胜利！获得 ${st.btFloor} 球${st.btElite?" + 大师球":""}`);
+    saveGame();
   }else{
     pushLog(`💀 战败…`);
   }
   if(st.autoBattle){
     st.btResult=1.5;
   }else{
-    st.btResult=2.0;
-    buildFightUI();
+    st.btResult=2.2;
   }
   renderHUD();
 }
@@ -795,8 +885,8 @@ function tickBattle(dt){
     st.btResult-=dt;
     if(st.btResult<=0){
       st.btResult=0;
-      if(st.autoBattle){st.btPhase="select";startBattle(st.btSlot);}  // 自动推关：胜败都继续
-      else{st.btPhase="select";renderBattle();}
+      if(st.autoBattle){st.btPhase="select";startBattle(st.btSlot);}  // 自动连战：重开并刷新精灵形象
+      else{st.btPhase="select";hideFight();renderBattle();}
     }
     return;
   }
@@ -821,13 +911,13 @@ function tickBattle(dt){
       }
       st.btPTurn=!st.btPTurn;
       pushLog(line);
-      if(st.btP<=0){st.btP=0;pushLog(`💀 ${p.cn} 倒下了...`);st.btPhase="result";st.btResult=2.5;buildFightUI();}
+      if(st.btP<=0){st.btP=0;pushLog(`💀 ${p.cn} 倒下了...`);st.btPhase="result";st.btResult=2.2;renderHUD();}
       if(st.btE<=0){st.btE=0;pushLog(`🎉 ${e.cn} 倒下了！`);st.btPhase="result";
-        st.btResult=2.5;st.maxTower++;st.btFloor=st.maxTower;
+        st.btResult=2.2;st.maxTower++;st.btFloor=st.maxTower;
         st.balls=Math.min(15000000,st.balls+st.btFloor);
         if(st.btElite)st.masterBalls++;
         pushLog(`获得 ${st.btFloor} 球${st.btElite?" + 大师球":""}`);
-        buildFightUI();renderHUD();}
+        saveGame();renderHUD();}
       updateBars();
     }
   }
@@ -860,14 +950,20 @@ function renderDex(){
   grid.addEventListener("wheel",e=>{grid.scrollTop+=e.deltaY;});
 }
 
-/* ═════════════ 粒子系统（画布） ═════════════ */
+/* ═════════════ 粒子系统（星空 + 流星 + 庆祝火花 + 星光） ═════════════ */
 const canvas=$("spark"),ctx=canvas.getContext("2d");
 let sparks=[];
-function sizeCanvas(){const r=$("stage").getBoundingClientRect();canvas.width=r.width;canvas.height=r.height;}
+let stars=[],meteors=[];
+function initStars(){
+  stars.length=0;
+  for(let i=0;i<170;i++)stars.push({x:Math.random(),y:Math.random(),
+    r:0.5+Math.random()*1.3,ph:Math.random()*6.28,sp:0.4+Math.random()*1.8,big:Math.random()<0.1});
+}
+function sizeCanvas(){const r=$("stage").getBoundingClientRect();canvas.width=r.width;canvas.height=r.height;initStars();}
 sizeCanvas();addEventListener("resize",sizeCanvas);
 function burst(pid,q,count){
   const cx=canvas.width/2,cy=canvas.height/2;
-  const col=(pid?QUALITY_RGB[pokedex[pid].quality]:(q?QUALITY_RGB[q]:null))||[255,255,180];
+  const col=(pid?QUALITY_RGB[pokedex[pid].quality]:(q?QUALITY_RGB[q]:null))||[255,200,120];
   for(let i=0;i<count;i++){
     const a=Math.random()*Math.PI*2,s=80+Math.random()*260;
     sparks.push({x:cx,y:cy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0.7+Math.random()*1.6,
@@ -876,6 +972,25 @@ function burst(pid,q,count){
 }
 function tickSparks(dt){
   ctx.clearRect(0,0,canvas.width,canvas.height);
+  const t=performance.now()/1000;
+  // 背景星海（闪烁）
+  for(const s of stars){
+    const a=0.25+0.55*Math.abs(Math.sin(t*s.sp+s.ph));
+    ctx.globalAlpha=a;
+    ctx.fillStyle=s.big?"#cfe4ff":"#fff";
+    ctx.beginPath();ctx.arc(s.x*canvas.width,s.y*canvas.height,s.r,0,Math.PI*2);ctx.fill();
+  }
+  // 流星
+  if(Math.random()<dt*0.10)meteors.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height*0.35,
+    vx:-(170+Math.random()*150),vy:55+Math.random()*60,life:0.7});
+  for(let i=meteors.length-1;i>=0;i--){
+    const m=meteors[i];m.life-=dt;
+    if(m.life<=0){meteors.splice(i,1);continue;}
+    m.x+=m.vx*dt;m.y+=m.vy*dt;
+    ctx.strokeStyle=`rgba(255,255,255,${Math.max(0,m.life)*0.9})`;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(m.x-m.vx*0.05,m.y-m.vy*0.05);ctx.stroke();
+  }
+  // 庆祝火花
   for(let i=sparks.length-1;i>=0;i--){
     const s=sparks[i];s.life-=dt;
     if(s.life<=0){sparks.splice(i,1);continue;}
@@ -884,21 +999,20 @@ function tickSparks(dt){
     ctx.fillStyle=s.color;
     ctx.beginPath();ctx.arc(s.x,s.y,3,0,Math.PI*2);ctx.fill();
   }
-  ctx.globalAlpha=1;
   // 漂浮光点
-  const t=performance.now()/1000;
-  for(let i=0;i<10;i++){
+  ctx.globalAlpha=1;
+  for(let i=0;i<12;i++){
     const x=(Math.sin(t*0.4+i*7.1)*0.5+0.5)*canvas.width;
-    const y=((t*14+i*140)%(canvas.height+40))-20;
-    ctx.globalAlpha=0.5+0.5*Math.sin(t+i);
-    ctx.fillStyle=i%2?"#fff8e0":"#cfeaff";
-    ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();
+    const y=((t*12+i*130)%(canvas.height+40))-20;
+    ctx.globalAlpha=0.3+0.4*Math.sin(t*2+i);
+    ctx.fillStyle=i%2?"#ffe9a8":"#9fd0ff";
+    ctx.beginPath();ctx.arc(x,y,1.6,0,Math.PI*2);ctx.fill();
   }
   ctx.globalAlpha=1;
 }
 
 /* ═════════════ 主循环 ═════════════ */
-let lastT=performance.now();
+let lastT=performance.now(),saveTimer=0;
 function loop(now){
   const dt=Math.min(0.1,(now-lastT)/1000);lastT=now;
   // 自动孵化（能量满 + 有球 + 不在手动孵化动画中才执行）
@@ -912,11 +1026,14 @@ function loop(now){
     }
     renderHUD();
   }
-  // 无球自动关闭自动孵化（动画进行中只改状态、不重渲染，避免打断破壳）
+  // 无球自动关闭自动孵化
   if(st.autoThrow&&st.balls<=0){st.autoThrow=false;if(st.revealTimer<=0)renderTree();toast("精灵球不足，自动孵化已暂停");}
   tickHatch(now);
   tickBattle(dt);
   tickSparks(dt);
+  // 自动存档
+  saveTimer+=dt;
+  if(saveTimer>=5){saveTimer=0;saveGame();}
   requestAnimationFrame(loop);
 }
 function autoHatchOne(){
@@ -925,7 +1042,7 @@ function autoHatchOne(){
   if(st.firstSeen>0)st.balls=Math.min(15000000,st.balls+st.firstSeen);
   const rep=tryReplace(p.id,lv,cp);
   if(rep.pending||rep.empty){
-    if(rep.pending){ // 有旧精灵：战力更高才替换
+    if(rep.pending){
       const old=st.slots[rep.slot];
       if(cp>old[2])st.slots[rep.slot]=[p.id,lv,cp];
       else addXP(releaseXP(p.quality));
@@ -935,6 +1052,28 @@ function autoHatchOne(){
   }
 }
 
+/* ── 开局引导 ── */
+const TUT=[
+  {ico:"🥚",t:"点击精灵蛋孵化",b:"点一下中央的凤王精灵蛋，消耗 1 颗精灵球随机孵化一只宝可梦。品质从普通 → 稀有 → 史诗 → 传说 → 神话，越高越稀有。"},
+  {ico:"⚡",t:"自动孵化 & 大师球",b:"开启「自动孵化」能量满就会自动孵化，可调 1x~10x 速度。通关爬塔每 10 层获得 1 颗大师球，必出当前最高品质，右上角一键投掷。"},
+  {ico:"⚔️",t:"爬塔对战 & 图鉴",b:"在「对战」页选中精灵后自动进入全屏战斗画面，开启自动连战可挂机推塔，每 10 层有精英怪。收集 649 只图鉴，解锁首次发现奖励。"},
+  {ico:"💾",t:"进度自动保存",b:"进度自动保存在本机浏览器，刷新后继续。换一台设备或浏览器就是全新账号。"}
+];
+let tutIdx=0;
+function showTutorial(i){
+  tutIdx=i;
+  const s=TUT[i];
+  $("tutIcon").textContent=s.ico;
+  $("tutTitle").textContent=s.t;
+  $("tutBody").textContent=s.b;
+  $("tutPrev").style.display=i===0?"none":"";
+  $("tutNext").style.display=i===TUT.length-1?"none":"";
+  $("tutStart").style.display=i===TUT.length-1?"":"none";
+  $("tutDots").innerHTML=TUT.map((_,k)=>`<div class="tdot ${k===i?"on":""}"></div>`).join("");
+  $("tutorial").classList.add("show");
+}
+function hideTutorial(){$("tutorial").classList.remove("show");}
+
 /* ── 切换页面 ── */
 function switchTab(tab){
   st.screen=tab;
@@ -943,13 +1082,17 @@ function switchTab(tab){
   $("screen-"+tab).classList.add("on");
   if(tab==="tree")renderTree();
   if(tab==="slots")renderSlots();
-  if(tab==="battle")renderBattle();
+  if(tab==="battle"){renderBattle();if(st.btPhase!=="select")showFight();}
   if(tab==="dex")renderDex();
+  if(tab!=="battle")hideFight();
 }
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
 
 /* ── 启动 ── */
+const hasSave=loadGame();
 renderTree();renderHUD();
+$("hudBallIcon").src=BALL;
+$("hudMasterIcon").src=MASTER;
 // 大师球（右上角 HUD）点击投掷
 $("hudMaster").onclick=masterThrow;
 // 结果弹窗关闭不打断
@@ -957,7 +1100,20 @@ $("resultModal").addEventListener("click",e=>{if(e.target.id==="resultModal"){st
 // 属性详情弹窗关闭
 $("slotModal").addEventListener("click",e=>{if(e.target.id==="slotModal")$("slotModal").classList.remove("show");});
 $("sdClose").onclick=()=>$("slotModal").classList.remove("show");
-toast("🎉 全新账号已就绪 · 点击精灵蛋开始收集！");
+// 战斗画面
+$("foExit").onclick=()=>{st.autoBattle=false;st.btPhase="select";hideFight();renderBattle();};
+$("abSwitch").onclick=()=>{st.autoBattle=!st.autoBattle;buildFightUI();if(st.autoBattle&&st.btPhase==="fight")resolveFight();};
+$("bfSkip").onclick=resolveFight;
+// 存档 / 重置
+$("btnSave").onclick=()=>{saveGame();toast("💾 进度已保存到本机浏览器");};
+$("btnReset").onclick=()=>{if(confirm("确定重置存档吗？将清空本机进度重新开始。")){localStorage.removeItem(SAVE_KEY);location.reload();}};
+// 开局引导
+$("tutPrev").onclick=()=>showTutorial(Math.max(0,tutIdx-1));
+$("tutNext").onclick=()=>showTutorial(Math.min(TUT.length-1,tutIdx+1));
+$("tutStart").onclick=()=>{hideTutorial();toast("🎉 出发！点击精灵蛋开始收集！");};
+$("tutReset").onclick=()=>{if(confirm("确定重置存档吗？")){localStorage.removeItem(SAVE_KEY);location.reload();}};
+if(hasSave){toast("🎉 欢迎回来，继续你的冒险！");}
+else{showTutorial(0);}
 requestAnimationFrame(loop);
 </script>
 </body>
