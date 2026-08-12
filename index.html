@@ -907,9 +907,10 @@ function resolveFight(){
   st.btP=Math.max(0,st.btP);st.btE=Math.max(0,st.btE);
   st.btPhase="result";
   if(st.btE<=0){st.maxTower++;st.btFloor=st.maxTower;
-    st.balls=Math.min(15000000,st.balls+st.btFloor);
+    const winBalls=5+Math.floor(st.btFloor/10);
+    st.balls=Math.min(15000000,st.balls+winBalls);
     if(st.btElite){st.masterBalls++;st.mbFloor=st.maxTower;}
-    pushLog(`🎉 胜利！获得 ${st.btFloor} 球${st.btElite?" + 大师球":""}`);
+    pushLog(`🎉 胜利！获得 ${winBalls} 球${st.btElite?" + 大师球":""}`);
     saveGame();
   }else{
     pushLog(`💀 战败…`);
@@ -961,9 +962,10 @@ function tickBattle(dt){
       if(st.btP<=0){st.btP=0;pushLog(`💀 ${p.cn} 倒下了...`);st.btPhase="result";st.btResult=2.2;renderHUD();}
       if(st.btE<=0){st.btE=0;pushLog(`🎉 ${e.cn} 倒下了！`);st.btPhase="result";
         st.btResult=2.2;st.maxTower++;st.btFloor=st.maxTower;
-        st.balls=Math.min(15000000,st.balls+st.btFloor);
+        const winBalls=5+Math.floor(st.btFloor/10);
+        st.balls=Math.min(15000000,st.balls+winBalls);
         if(st.btElite){st.masterBalls++;st.mbFloor=st.maxTower;}
-        pushLog(`获得 ${st.btFloor} 球${st.btElite?" + 大师球":""}`);
+        pushLog(`获得 ${winBalls} 球${st.btElite?" + 大师球":""}`);
         saveGame();renderHUD();}
       updateBars();
     }
