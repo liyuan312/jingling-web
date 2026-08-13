@@ -610,7 +610,6 @@ function spriteHTML(id,size){
   return src?`<img src="${src}" style="width:${size}px;height:${size}px">`
             :`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${QUALITY_COLORS[pokedex[id].quality]};opacity:.7"></div>`;
 }
-function qtext(q){return`<span style="color:${QUALITY_COLORS[q]};font-weight:800">${q}</span>`;}
 
 /* ── 顶部 HUD ── */
 function renderHUD(){
@@ -1061,15 +1060,20 @@ function tickSparks(dt){
   ctx.globalAlpha=1;
 }
 
-/* ═════════════ 主循环 ═════════════ */
-let lastT=performance.now(),saveTimer=0,ballTimer=0;
-function loop(now){
-  const dt=Math.min(0.1,(now-lastT)/1000);lastT=now;
+/* ═════════════ 主循环 ═════════════
+   经济计时（能量/球恢复/兜底存档）用【真实墙钟时间】，不随帧率缩放：
+   - 旧版用 rAF 的 dt 且封顶 0.1s，标签页降帧/切后台时游戏内时间跑慢 10 倍甚至停摆，
+     造成"精灵球只在自动孵化开启时才恢复"的错觉（其实是恢复计时在后台不走）。
+   - 现拆成 economyTick（墙钟驱动 + 后台 1s 兜底定时器）+ loop（帧驱动渲染/战斗）。 */
+let lastT=performance.now(),lastEco=performance.now(),saveTimer=0,ballTimer=0;
+function economyTick(now){
+  const eco=(now-lastEco)/1000;lastEco=now;
+  if(eco<=0)return;
   // 自动孵化：仅在【自动孵化】开启时才积累能量并孵蛋（与原版一致；关闭则完全不孵、不消耗球、不涨经验）
   if(st.autoThrow&&st.revealTimer<=0){
     // 无球自动关闭自动孵化，防止能量条无限拉伸
     if(st.balls<=0){st.autoThrow=false;st.energy=0;renderTree();toast("精灵球不足，自动孵化已暂停");}
-    st.energy+=st.energyRate*dt;
+    st.energy+=st.energyRate*eco;
     if(st.energy>=st.energyMax&&st.balls>0){
       st.energy=0;
       const sp=SPEEDS[st.autoSpeed];
@@ -1081,17 +1085,23 @@ function loop(now){
       renderHUD();
     }
   }
-  // 球自然恢复：每分钟 max(1, 塔层//10) 颗（与原版一致）
-  ballTimer+=dt;
+  // 球自然恢复：每分钟 max(1, 塔层//10) 颗（墙钟时间，与自动孵化开关无关，后台标签页也持续恢复）
+  ballTimer+=eco;
   if(ballTimer>=60){ballTimer=0;st.balls=Math.min(15000000,st.balls+regenRate());saveGame();renderHUD();}
+  // 兜底自动存档（每5秒）
+  saveTimer+=eco;
+  if(saveTimer>=5){saveTimer=0;saveGame();}
+}
+function loop(now){
+  const dt=Math.min(0.1,(now-lastT)/1000);lastT=now;
+  economyTick(now);
   tickHatch(now);
   tickBattle(dt);
   tickSparks(dt);
-  // 兜底自动存档（每5秒）
-  saveTimer+=dt;
-  if(saveTimer>=5){saveTimer=0;saveGame();}
   requestAnimationFrame(loop);
 }
+// 后台兜底：rAF 在后台标签页会暂停，用 1 秒定时器保证挂机经济持续
+setInterval(()=>economyTick(performance.now()),1000);
 function autoHatchOne(){
   const [p,lv,cp]=rollPokemon(false);
   st.firstSeen=checkFirstSeen(p.id,p.quality);
@@ -1157,7 +1167,7 @@ $("hudMaster").onclick=()=>{
   masterThrow();
 };
 // 球来源说明（悬停可见）
-$("hudRegen").parentElement.title="精灵球来源：① 对战塔胜利 +层数球　② 首次发现奖励　③ 每分钟自然恢复 max(1,塔层/10) 球";
+$("hudRegen").parentElement.title="精灵球来源：① 对战塔胜利 +5+层数/10 球　② 首次发现奖励　③ 每分钟自然恢复 max(1,塔层/10) 球（始终生效，与自动孵化开关无关）";
 // 结果弹窗关闭不打断
 $("resultModal").addEventListener("click",e=>{if(e.target.id==="resultModal"){st.pending=null;$("resultModal").classList.remove("show");$("treeBtn").style.display="";$("eggHint").style.display="";renderTree();}});
 // 属性详情弹窗关闭
@@ -1176,7 +1186,10 @@ $("btnReset").onclick=()=>{if(confirm("确定重置存档吗？将清空本机�
 // 实时自动保存：关闭/切后台/刷新前立即存档（重置中跳过）
 addEventListener("beforeunload",maybeSave);
 addEventListener("pagehide",maybeSave);
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")maybeSave();});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden")maybeSave();
+  else economyTick(performance.now());  // 切回前台：补齐浏览器挂起期间的经济时间（球恢复/能量）
+});
 // 开局引导
 $("tutPrev").onclick=()=>showTutorial(Math.max(0,tutIdx-1));
 $("tutNext").onclick=()=>showTutorial(Math.min(TUT.length-1,tutIdx+1));
