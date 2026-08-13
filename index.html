@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>精灵传说 · 网页版</title>
-<!-- v20260813b：放生经验改精灵等级驱动(去塔层)、球恢复墙钟+可见、大师球发放弹提示。若右下角版本号不是 v20260813b 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
+<!-- v20260813c：首次发现奖励改固定10/20/30/45/60球(去塔层倍率,杀球爆炸)、大师球迁移补发加固。若右下角版本号不是 v20260813c 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
 
 <style>
   :root{
@@ -392,7 +392,7 @@
     <div class="pill" id="btnSave">💾 存档</div>
     <div class="pill" id="btnReset">🔄 重置</div>
   </div>
-  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813b</b></div>
+  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813c</b></div>
 </div>
 
 <script src="pokemon_data.js"></script>
@@ -515,7 +515,7 @@ function checkFirstSeen(id,q){
   if(st.seen.has(id))return 0;
   st.seen.add(id);
   const mins={"普通":10,"稀有":20,"史诗":30,"传说":45,"神话":60}[q]||10;
-  return regenRate()*mins;
+  return mins;  // 固定首次发现奖励（去塔层/倍率），杜绝"爬塔→球爆炸→无限自动孵化→放生→经验爆炸"连锁
 }
 function rollPokemon(master){
   let pool=qualityPool();
@@ -589,12 +589,13 @@ function loadGame(){
     st.level=d.level||1;st.xp=d.xp||0;st.balls=d.balls??10;st.masterBalls=d.masterBalls||0;
     st.maxTower=d.maxTower||0;st.slots=d.slots||{};st.seen=new Set(d.seen||[]);
     st.autoThrow=!!d.autoThrow;st.autoSpeed=d.autoSpeed||0;
-    // 大师球旧存档迁移：修复"通关整十层但没发大师球"——只在完全没拿过(0)且已过第10层时一次性补发
-    if(d.mbFloor===undefined){
-      st.mbFloor=Math.floor(st.maxTower/10)*10;
-      if(st.maxTower>=10&&st.masterBalls===0)st.masterBalls=st.mbFloor/10;
-    }else{
-      st.mbFloor=d.mbFloor||0;
+    // 大师球旧存档迁移：按"已发放的整十层 mbFloor"补发缺失差额，覆盖两类旧档——
+    // ① 无 mbFloor（最早版本，整十层从没发过）② 有 mbFloor 但 masterBalls=0 且塔层已越过已发放层
+    st.mbFloor=(d.mbFloor===undefined)?0:(d.mbFloor||0);
+    const mbDue=Math.floor(st.maxTower/10),mbAwarded=Math.floor(st.mbFloor/10);
+    if(mbDue>mbAwarded){
+      if(st.masterBalls===0)st.masterBalls=mbDue-mbAwarded;  // 只在完全没拿过时补发，避免重复发放
+      st.mbFloor=mbDue*10;                                   // 回填已发放层，防止未来重复补发
     }
     return true;
   }catch(e){return false;}
