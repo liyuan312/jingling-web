@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>精灵传说 · 网页版</title>
-<!-- v20260813c：首次发现奖励改固定10/20/30/45/60球(去塔层倍率,杀球爆炸)、大师球迁移补发加固。若右下角版本号不是 v20260813c 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
+<!-- v20260813d：重置修好(saveGame根部拦截resetting,杜绝5秒窗口期旧档回写)、首次发现奖励再收紧到5/10/15/20/30(10x孵化净消耗)。若右下角版本号不是 v20260813d 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
 
 <style>
   :root{
@@ -392,7 +392,7 @@
     <div class="pill" id="btnSave">💾 存档</div>
     <div class="pill" id="btnReset">🔄 重置</div>
   </div>
-  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813c</b></div>
+  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813d</b></div>
 </div>
 
 <script src="pokemon_data.js"></script>
@@ -514,8 +514,10 @@ const releaseXP=(q,lv)=>Math.max(1,lv||st.level)*XP_MULT[q];  // 放生经验=�
 function checkFirstSeen(id,q){
   if(st.seen.has(id))return 0;
   st.seen.add(id);
-  const mins={"普通":10,"稀有":20,"史诗":30,"传说":45,"神话":60}[q]||10;
-  return mins;  // 固定首次发现奖励（去塔层/倍率），杜绝"爬塔→球爆炸→无限自动孵化→放生→经验爆炸"连锁
+  const mins={"普通":5,"稀有":10,"史诗":15,"传说":20,"神话":30}[q]||5;
+  // 一次性图鉴奖励（固定小值）：仅做"发现新精灵"的小甜头，不再让 10x 自动孵化在球上净增长
+  // （旧数值下实测：塔129+10x+图鉴未满500时 3 分钟球 +1106，见 sim；现数值在 seen≥500 时已转净消耗）
+  return mins;
 }
 function rollPokemon(master){
   let pool=qualityPool();
@@ -573,7 +575,12 @@ function tryReplace(pid,level,cp){
 
 /* ═════════════ 存档（localStorage） ═════════════ */
 const SAVE_KEY="jingling-web-save-v1";
+// 重置标志：重置过程中禁止任何 saveGame 回写。所有存档入口（beforeunload/pagehide/visibilitychange/
+// 1秒兜底/孵蛋/恢复）最终都走 saveGame，只拦 maybeSave 不够——点重置后 reload 窗口期若超过 5 秒，
+// 1秒 interval 的兜底存档会把旧档写回 localStorage，导致"重置没用"。所以在 saveGame 根部统一拦截。
+let resetting=false;
 function saveGame(){
+  if(resetting)return;
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       level:st.level,xp:st.xp,balls:st.balls,masterBalls:st.masterBalls,maxTower:st.maxTower,
@@ -1182,8 +1189,7 @@ $("abSwitch").onclick=()=>{st.autoBattle=!st.autoBattle;buildFightUI();if(st.aut
 $("bfSkip").onclick=resolveFight;
 // 存档 / 重置
 $("btnSave").onclick=()=>{saveGame();toast("💾 进度已保存到本机浏览器");};
-// 重置标志：重置会触发 beforeunload/pagehide 自动存档，必须跳过，否则刚删的存档又被写回去（重置=没重置）
-let resetting=false;
+// 重置会触发 beforeunload/pagehide 自动存档，必须跳过（saveGame 根部已拦 resetting，maybeSave 双保险）
 const maybeSave=()=>{if(!resetting)saveGame();};
 $("btnReset").onclick=()=>{if(confirm("确定重置存档吗？将清空本机进度重新开始。")){resetting=true;localStorage.removeItem(SAVE_KEY);location.reload();}};
 // 实时自动保存：关闭/切后台/刷新前立即存档（重置中跳过）
