@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>精灵传说 · 网页版</title>
+<!-- v20260813b：放生经验改精灵等级驱动(去塔层)、球恢复墙钟+可见、大师球发放弹提示。若右下角版本号不是 v20260813b 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
+
 <style>
   :root{
     --q-norm:#cfcfcf; --q-rare:#4fe06a; --q-epic:#b560ff; --q-leg:#ffa51e; --q-myth:#ff3d3d;
@@ -390,7 +392,7 @@
     <div class="pill" id="btnSave">💾 存档</div>
     <div class="pill" id="btnReset">🔄 重置</div>
   </div>
-  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号</div>
+  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813b</b></div>
 </div>
 
 <script src="pokemon_data.js"></script>
@@ -496,7 +498,7 @@ const st={level:1,xp:0,balls:10,masterBalls:0,maxTower:0,mbFloor:0,slots:{},seen
   btP:0,btPmax:0,btE:0,btEmax:0,btTurn:0,btPTurn:true,btPcrit:0,btEcrit:0,
   btFloor:1,btElite:false,btResult:0,btTimer:0,btLog:[]};
 const xpNeeded=()=>st.level<=XP_TABLE.length?XP_TABLE[st.level-1]:XP_TABLE[XP_TABLE.length-1];
-const regenRate=()=>Math.max(1,Math.floor(st.maxTower/10));
+const regenRate=()=>Math.max(3,Math.floor(st.maxTower/10));  // 每分钟自然恢复（塔0也至少3球/分，肉眼可见，杜绝"看不出在恢复"）
 function addXP(n){
   if(st.level>=100)return;
   st.xp+=n;
@@ -508,7 +510,7 @@ function addXP(n){
 }
 const qualityUnlocked=()=>st.level>=80?"神话":st.level>=50?"传说":st.level>=25?"史诗":st.level>=10?"稀有":"普通";
 const qualityPool=()=>QUALITY_NAMES.slice(0,QUALITY_NAMES.indexOf(qualityUnlocked())+1);
-const releaseXP=q=>Math.max(1,st.maxTower)*XP_MULT[q];  // 放生经验=塔层×品质倍率（去掉等级因子，阻断雪球）
+const releaseXP=(q,lv)=>Math.max(1,lv||st.level)*XP_MULT[q];  // 放生经验=精灵等级×品质倍率（与塔层无关，杜绝"刷塔→放生→跳级"雪球）
 function checkFirstSeen(id,q){
   if(st.seen.has(id))return 0;
   st.seen.add(id);
@@ -744,7 +746,7 @@ $("rcYes").onclick=()=>{
     st.slots[rep.slot]=[r.p.id,r.lv,r.cp];
     toast(`${r.p.cn} 已进入 ${TYPE_CN[rep.slot]} 属性槽！`);
   }else{
-    addXP(releaseXP(r.p.quality));
+    addXP(releaseXP(r.p.quality,r.lv));
     toast(`${r.p.cn} 放生了，获得经验`);
   }
   st.pending=null;$("resultModal").classList.remove("show");
@@ -754,7 +756,7 @@ $("rcYes").onclick=()=>{
 };
 $("rcNo").onclick=()=>{
   const r=st.pending;if(!r)return;
-  addXP(releaseXP(r.p.quality));
+  addXP(releaseXP(r.p.quality,r.lv));
   toast(`${r.p.cn} 放生了，获得经验`);
   st.pending=null;$("resultModal").classList.remove("show");
   $("treeBtn").style.display="";
@@ -909,7 +911,7 @@ function resolveFight(){
   if(st.btE<=0){st.maxTower++;st.btFloor=st.maxTower;
     const winBalls=5+Math.floor(st.btFloor/10);
     st.balls=Math.min(15000000,st.balls+winBalls);
-    if(st.btElite){st.masterBalls++;st.mbFloor=st.maxTower;}
+    if(st.btElite){st.masterBalls++;st.mbFloor=st.maxTower;toast("🌟 通关第 "+st.btFloor+" 层！获得 1 颗大师球");}
     pushLog(`🎉 胜利！获得 ${winBalls} 球${st.btElite?" + 大师球":""}`);
     saveGame();
   }else{
@@ -964,7 +966,7 @@ function tickBattle(dt){
         st.btResult=2.2;st.maxTower++;st.btFloor=st.maxTower;
         const winBalls=5+Math.floor(st.btFloor/10);
         st.balls=Math.min(15000000,st.balls+winBalls);
-        if(st.btElite){st.masterBalls++;st.mbFloor=st.maxTower;}
+        if(st.btElite){st.masterBalls++;st.mbFloor=st.maxTower;toast("🌟 通关第 "+st.btFloor+" 层！获得 1 颗大师球");}
         pushLog(`获得 ${winBalls} 球${st.btElite?" + 大师球":""}`);
         saveGame();renderHUD();}
       updateBars();
@@ -1085,12 +1087,12 @@ function economyTick(now){
       renderHUD();
     }
   }
-  // 球自然恢复：每分钟 max(1, 塔层//10) 颗（墙钟时间，与自动孵化开关无关，后台标签页也持续恢复）
+  // 球自然恢复：每分钟 max(3, 塔层//10) 颗（墙钟时间，与自动孵化开关/倍率无关，后台标签页也持续恢复）
   ballTimer+=eco;
-  if(ballTimer>=60){ballTimer=0;st.balls=Math.min(15000000,st.balls+regenRate());saveGame();renderHUD();}
-  // 兜底自动存档（每5秒）
+  if(ballTimer>=60){ballTimer=0;st.balls=Math.min(15000000,st.balls+regenRate());toast("🌱 自然恢复 +"+regenRate()+" 精灵球");saveGame();renderHUD();}
+  // 兜底自动存档（每5秒，顺带刷新 HUD，让球数/经验条不显得卡死）
   saveTimer+=eco;
-  if(saveTimer>=5){saveTimer=0;saveGame();}
+  if(saveTimer>=5){saveTimer=0;saveGame();renderHUD();}
 }
 function loop(now){
   const dt=Math.min(0.1,(now-lastT)/1000);lastT=now;
@@ -1111,10 +1113,10 @@ function autoHatchOne(){
     if(rep.pending){
       const old=st.slots[rep.slot];
       if(cp>old[2])st.slots[rep.slot]=[p.id,lv,cp];
-      else addXP(releaseXP(p.quality));
+      else addXP(releaseXP(p.quality,lv));
     }else st.slots[rep.slot]=[p.id,lv,cp];
   }else{
-    addXP(releaseXP(p.quality));
+    addXP(releaseXP(p.quality,lv));
   }
 }
 
@@ -1167,7 +1169,7 @@ $("hudMaster").onclick=()=>{
   masterThrow();
 };
 // 球来源说明（悬停可见）
-$("hudRegen").parentElement.title="精灵球来源：① 对战塔胜利 +5+层数/10 球　② 首次发现奖励　③ 每分钟自然恢复 max(1,塔层/10) 球（始终生效，与自动孵化开关无关）";
+$("hudRegen").parentElement.title="精灵球来源：① 对战塔胜利 +5+层数/10 球　② 首次发现奖励　③ 每分钟自然恢复 max(3,塔层/10) 球（始终生效，与自动孵化开关/倍率无关）";
 // 结果弹窗关闭不打断
 $("resultModal").addEventListener("click",e=>{if(e.target.id==="resultModal"){st.pending=null;$("resultModal").classList.remove("show");$("treeBtn").style.display="";$("eggHint").style.display="";renderTree();}});
 // 属性详情弹窗关闭
