@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>精灵传说 · 网页版</title>
-<!-- v20260813d：重置修好(saveGame根部拦截resetting,杜绝5秒窗口期旧档回写)、首次发现奖励再收紧到5/10/15/20/30(10x孵化净消耗)。若右下角版本号不是 v20260813d 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
+<!-- v20260813e：修大师球发放bug——bfSkip(跳过本局)重复点击导致已结算战斗重复结算(maxTower连+、大师球发到非整十层/整十层漏掉)，resolveFight 增加 btPhase==="fight" 护栏。若右下角版本号不是 v20260813e 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
 
 <style>
   :root{
@@ -392,7 +392,7 @@
     <div class="pill" id="btnSave">💾 存档</div>
     <div class="pill" id="btnReset">🔄 重置</div>
   </div>
-  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813d</b></div>
+  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813e</b></div>
 </div>
 
 <script src="pokemon_data.js"></script>
@@ -900,6 +900,10 @@ function buildFightUI(){
 function pushLog(line){st.btLog.push(line);if(st.btLog.length>80)st.btLog.shift();
   const box=$("bfLog");if(box){box.innerHTML=st.btLog.map(x=>`<div>${x}</div>`).join("");box.scrollTop=box.scrollHeight;}}
 function resolveFight(){
+  // 只结算"正在进行的战斗"。bfSkip(跳过本局)绑定了本函数，若不加此护栏，
+  // 已结算的战斗被再点一次会重复走胜利分支：maxTower 连续 +1、大师球按残留的
+  // btElite 发放到非整十层、整十层反被跳过 → "整十不掉、非整十乱掉"。
+  if(st.btPhase!=="fight")return;
   const p=pokedex[st.btPlayer[0]],e=pokedex[st.btEnemy[0]];
   const plv=st.btPlayer[1],elv=st.btEnemy[1];
   let guard=0;
