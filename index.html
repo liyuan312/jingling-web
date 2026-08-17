@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>精灵传说 · 网页版</title>
-<!-- v20260813e：修大师球发放bug——bfSkip(跳过本局)重复点击导致已结算战斗重复结算(maxTower连+、大师球发到非整十层/整十层漏掉)，resolveFight 增加 btPhase==="fight" 护栏。若右下角版本号不是 v20260813e 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
+<!-- v20260813f：每级所需经验扩大为原来的 100 倍（Medium-Fast ×100，累计到 Lv100 约 1 亿）。若右下角版本号不是 v20260813f 即为旧缓存，请 Ctrl+Shift+R 强刷 -->
 
 <style>
   :root{
@@ -392,7 +392,7 @@
     <div class="pill" id="btnSave">💾 存档</div>
     <div class="pill" id="btnReset">🔄 重置</div>
   </div>
-  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813e</b></div>
+  <div id="linkTag">🎮 进度自动保存在本机浏览器 · 换设备即全新账号 · <b>v20260813f</b></div>
 </div>
 
 <script src="pokemon_data.js"></script>
@@ -438,9 +438,10 @@ const TYPE_CHART={
 "dark|fighting":.5,"dark|psychic":2,"dark|ghost":2,"dark|dark":.5,"dark|fairy":.5,
 "steel|fire":.5,"steel|water":.5,"steel|electric":.5,"steel|ice":2,"steel|rock":2,"steel|steel":.5,"steel|fairy":2,
 "fairy|fighting":2,"fairy|dragon":2,"fairy|dark":2,"fairy|fire":.5,"fairy|poison":.5,"fairy|steel":.5};
-// 升级经验曲线：宝可梦官方「中等快」(Medium Fast)——每级所需 = 3·lv²+3·lv+1，累计到 Lv100 恰好 1,000,000
+// 升级经验曲线：宝可梦官方「中等快」(Medium Fast) 的 100 倍——每级所需 = 100×(3·lv²+3·lv+1)
+// 累计到 Lv100 约 1 亿（用户拍板：每级所需经验扩大为原来的 100 倍，曲线形状不变、整体放缓 100 倍）
 const XP_TABLE=[];
-for(let lv=1;lv<=100;lv++)XP_TABLE.push(3*lv*lv+3*lv+1);
+for(let lv=1;lv<=100;lv++)XP_TABLE.push(100*(3*lv*lv+3*lv+1));
 
 /* ═════════════ 官方球贴图（PokeAPI，base64 内嵌） ═════════════ */
 const BALL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeBAMAAADJHrORAAAAA3NCSVQFBQUYJt5DAAAAIVBMVEX///8xMTH/lDqcSjr/1jr////eWjpKUlKlpcV7e4TezvdcMgHRAAAAAXRSTlMAQObYZgAAAH5JREFUGNNjYKALEBQUROEqKSkhCTACuUpqAnC+kAtIIBEurRLqBOSnCeDgCymB1aclwvlg83DyhcH8tDRDKF/cSL0cyE0uhPHLKyLK0szLYXzG6aWh5eXllXD7l86IAHJXwB0sFTlz1apVjQj/dAG5HQJI/u3o6BDEEx60AwCJgyJdBXcpkgAAAABJRU5ErkJggg==";
